@@ -1,5 +1,7 @@
 Land NFT is a special but simple dapp that proposes the idea of selling land on the blockchain. Anybody can create their land and have the opportunity for others to buy it and becomes owners of the land. The owner of the land has the ability to set the land for sale or not. The price of the land can be edited based on the owners choice so it can be sold at a higher or lower price. This is a proposal dapp.
 
+https://eager-turing-99fe97.netilify.app
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
