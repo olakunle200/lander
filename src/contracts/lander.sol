@@ -20,20 +20,35 @@ contract lander{
         string landDescription;
         string landImage;
         uint amount;
+        uint highestBid;
         bool bought;
         bool forSale;
     }
+
+/*  Added a new struct and mapping for bidding functionality to keep the code base clean  */
+    struct Bid{
+        address bidder;
+        uint timeOfBidding;
+        uint askingAmount;
+    }
+    mapping(uint => Bid) bids;
 
     mapping(uint => Land) lands;
     uint landLength = 0;
 
     address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 
+
 // modifier to make sure it is the owner of the land
     modifier onlyOwner(uint _index) {
         require(msg.sender == lands[_index].owner, "Not the owner of land");
         _;
     }
+
+/* Added two new events for selling of land and bidding of land
+    We can filter through these events in the front end to show relevant events to relavent poeple */
+    event landSold(address indexed buyer, address indexed seller, uint soldPrice);
+    event newBid(uint indexed indexOfTheLand, address indexed bidder, uint biddingPrice );
 
 // function to create land
     function createLand(
@@ -49,6 +64,7 @@ contract lander{
             _desc,
             _image,
             _amount,
+            0,
             false,
             _forSale
         );
@@ -57,10 +73,11 @@ contract lander{
     }
 
 // function to edit land
+/* Added the onlyOwner modifier such that only the owner can edit the land */
     function editLand(
         uint _index,
         uint _amount
-    )public{
+    )public onlyOwner(_index){
         Land storage land = lands[_index];
         land.amount = _amount;
     }
@@ -97,11 +114,39 @@ contract lander{
             ),
             "Land could not be bought"
         );
+        emit landSold(msg.sender, lands[_index].owner , lands[_index].amount);
         lands[_index].bought = true;
         lands[_index].owner = payable(msg.sender);
         lands[_index].forSale = false;
     }
 
+/* Function to bid for the land*/
+    function bidForLand(uint _index, uint askingPrice ) public{
+        bids[_index] = Bid(
+            msg.sender,
+            block.timestamp,
+            askingPrice
+        );
+        Land storage land = lands[_index];
+        if(askingPrice > land.highestBid){
+            land.highestBid = askingPrice;
+        }
+        emit newBid(_index, msg.sender, askingPrice);
+    }
+
+/* Function for the owner to see all the bids made */
+    function seeAllBids(uint _index) public view  onlyOwner(_index) returns(
+        address, 
+        uint,
+        uint
+    ){
+        Bid storage bid = bids[_index];
+        return (
+            bid.bidder,
+            bid.timeOfBidding,
+            bid.askingAmount
+        );
+    }
 // function to sell land
     function sellLand(uint _index)public{
         lands[_index].bought = false;
